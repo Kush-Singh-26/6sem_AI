@@ -1,8 +1,9 @@
-#include<bits/stdc++.h>
+#include <iostream>
+#include <string>
+#include <algorithm>
 
 using namespace std;
 
-// Returns 10 if X wins, -10 if O wins, 0 otherwise
 int checkWin(const string& b) {
     int wins[8][3] = {{0,1,2},{3,4,5},{6,7,8},{0,3,6},{1,4,7},{2,5,8},{0,4,8},{2,4,6}};
     for (auto w : wins) {
@@ -12,30 +13,39 @@ int checkWin(const string& b) {
     return 0;
 }
 
-// The Minimax Algorithm
-int minimax(string& b, int depth, bool isMax) {
+// Added alpha (-infinity) and beta (+infinity) parameters
+int minimax(string& b, int depth, bool isMax, int alpha, int beta) {
     int score = checkWin(b);
-    if (score == 10) return score - depth;   // X wants to win fast
-    if (score == -10) return score + depth;  // O wants to win fast
-    if (b.find(' ') == string::npos) return 0; // Draw
+    if (score == 10) return score - depth;
+    if (score == -10) return score + depth;
+    if (b.find(' ') == string::npos) return 0;
 
     int best = isMax ? -1000 : 1000;
     for (int i = 0; i < 9; i++) {
         if (b[i] == ' ') {
-            b[i] = isMax ? 'X' : 'O'; // Make move
-            int val = minimax(b, depth + 1, !isMax); // Recurse
-            best = isMax ? max(best, val) : min(best, val);
-            b[i] = ' '; // Backtrack (undo move)
+            b[i] = isMax ? 'X' : 'O';
+            int val = minimax(b, depth + 1, !isMax, alpha, beta);
+            b[i] = ' '; // Backtrack
+
+            // Alpha-Beta Pruning Logic
+            if (isMax) {
+                best = max(best, val);
+                alpha = max(alpha, best); // Update the Maximizer's best guarantee
+            } else {
+                best = min(best, val);
+                beta = min(beta, best);   // Update the Minimizer's best guarantee
+            }
+
+            if (beta <= alpha) break; // PRUNE! The opponent won't let us go down this path
         }
     }
     return best;
 }
 
 int main() {
-    string b = "         "; // 9 spaces
+    string b = "         ";
     cout << "You are 'X'. Enter 0-8 to move.\n";
 
-    // Loop until someone wins or the board is full
     while (checkWin(b) == 0 && b.find(' ') != string::npos) {
         int move;
         cout << "\nYour move: ";
@@ -43,21 +53,20 @@ int main() {
         if (move < 0 || move > 8 || b[move] != ' ') continue;
         b[move] = 'X';
 
-        // AI Turn (if game isn't over)
         if (checkWin(b) == 0 && b.find(' ') != string::npos) {
             int bestScore = 1000, bestMove = -1;
             for (int i = 0; i < 9; i++) {
                 if (b[i] == ' ') {
                     b[i] = 'O';
-                    int score = minimax(b, 0, true);
+                    // Initial call passes -1000 for alpha and 1000 for beta
+                    int score = minimax(b, 0, true, -1000, 1000); 
                     if (score < bestScore) { bestScore = score; bestMove = i; }
-                    b[i] = ' '; // Backtrack
+                    b[i] = ' ';
                 }
             }
             b[bestMove] = 'O';
         }
 
-        // Print Board
         for (int i = 0; i < 9; i++) {
             cout << " " << b[i] << " " << ((i + 1) % 3 == 0 ? "\n" : "|");
             if (i == 2 || i == 5) cout << "---+---+---\n";

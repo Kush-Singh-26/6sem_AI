@@ -7,14 +7,14 @@
 
 using namespace std;
 
-void waterJug(int jug1_cap, int jug2_cap, int jug3_cap, int target) {
-    queue<pair<int, int, int>> q;
-    set<pair<int, int, inr>> visited;
-    map<pair<int, int, int>, pair<int, int, int>> parent;
+void waterJug(int jug1_cap, int jug2_cap, int target) {
+    queue<pair<int, int>> q;
+    set<pair<int, int>> visited;
+    map<pair<int, int>, pair<int, int>> parent;
 
-    q.push({0, 0, 0});
-    visited.insert({0, 0, 0});
-    pair<int, int, int> goal = {-1, -1, -1};
+    q.push({0, 0});
+    visited.insert({0, 0});
+    pair<int, int> goal = {-1, -1};
 
     while (!q.empty()) {
         auto state = q.front();
